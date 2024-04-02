@@ -7,10 +7,12 @@ import { ScanCommand } from '@aws-sdk/client-dynamodb';
 import dynamodbClient from '@utils/db';
 import schema from '@functions/getProductsById/schema';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
+import { logSource } from '@libs/logger';
 
 const getProductsList: ValidatedEventAPIGatewayProxyEvent<
   typeof schema
 > = async (_: ValidatedAPIGatewayProxyEvent<typeof schema>) => {
+  logSource('getProductsList');
   const scanCommand = new ScanCommand({
     TableName: process.env.PRODUCTS_TABLE,
   });

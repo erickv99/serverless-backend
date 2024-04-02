@@ -1,8 +1,10 @@
 import { GetCommand } from '@aws-sdk/lib-dynamodb';
 import { formatJSONResponse } from '@libs/api-gateway';
+import { logSource } from '@libs/logger';
 import dynamodbClient from '@utils/db';
 
 const getProductsById = async (event) => {
+  logSource('getProductsById', event);
   const productId = event?.pathParameters?.id ?? '0';
 
   const getProduct = {

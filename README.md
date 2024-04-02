@@ -10,7 +10,7 @@ https://ej64rpzdqi.execute-api.us-east-1.amazonaws.com/dev/products
 
 https://ej64rpzdqi.execute-api.us-east-1.amazonaws.com/dev/products/{id}
 
-https://ej64rpzdqi.execute-api.us-east-1.amazonaws.com/dev/products/1
+https://ej64rpzdqi.execute-api.us-east-1.amazonaws.com/dev/products/18b3113a8-b9a3-48e4-83fd-b14ed7305c0a
 
 # Module 4: Integration with NoSQL Database
 

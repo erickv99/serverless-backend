@@ -25,3 +25,11 @@ products.sh
 ```
 stocks.sh
 ```
+
+## Task 4.2
+
+Here is the FE calling the API with dynamo db integrated
+
+https://serverless-frontend-1.s3.amazonaws.com/index.html
+
+## Task 4.3

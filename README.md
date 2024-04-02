@@ -39,3 +39,7 @@ The following command can be used to test the createProduct function locally
 ```
 sls invoke local -f createProduct --data '{"headers":{"Content Type": "application/json"},"body": {"title":"Chair", "description":"good chair", "price": 100, "count":10}}'
 ```
+
+## task 4.4
+
+https://github.com/erickv99/serverless-backend/pull/2

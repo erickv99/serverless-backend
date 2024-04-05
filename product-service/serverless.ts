@@ -11,6 +11,7 @@ const serverlessConfiguration: AWS = {
   provider: {
     name: 'aws',
     runtime: 'nodejs20.x',
+    profile: 'iam-user1',
     region: 'us-east-1',
     stage: 'dev',
     apiGateway: {

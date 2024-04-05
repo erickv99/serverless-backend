@@ -21,11 +21,11 @@ const importService: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
 
   const putCommand = new PutObjectCommand({
     Bucket: process.env.BUCKET_NAME,
-    Key: fileName,
+    Key: 'uploaded/' + fileName,
   });
 
   const signedUrl = await getSignedUrl(s3Client, putCommand, {
-    expiresIn: 3600, // time in seconds
+    expiresIn: 3600, // time in seconds(1hour)
   });
 
   return formatJSONResponse({

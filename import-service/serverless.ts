@@ -1,6 +1,7 @@
 import type { AWS } from '@serverless/typescript';
 
 import importService from '@functions/importService';
+import importFileParser from '@functions/importFileParser';
 
 const serverlessConfiguration: AWS = {
   service: 'import-service',
@@ -10,6 +11,7 @@ const serverlessConfiguration: AWS = {
     name: 'aws',
     runtime: 'nodejs20.x',
     region: 'us-east-1',
+    profile: 'iam-user1',
     stage: 'dev',
     apiGateway: {
       minimumCompressionSize: 1024,
@@ -21,21 +23,25 @@ const serverlessConfiguration: AWS = {
       REGION: 'us-east-1',
       BUCKET_NAME: 'practitioner-js',
     },
-    iamRoleStatements: [
-      {
-        Effect: 'Allow',
-        Action: [
-          's3:PutObject',
-          's3:GetObject',
-          's3:DeleteObject',
-          's3:ListBucket',
+    iam: {
+      role: {
+        statements: [
+          {
+            Effect: 'Allow',
+            Action: [
+              's3:PutObject',
+              's3:GetObject',
+              's3:DeleteObject',
+              's3:ListBucket',
+            ],
+            Resource: 'arn:aws:s3:::practitioner-js/*',
+          },
         ],
-        Resource: 'arn:aws:s3:::practitioner-js/*',
       },
-    ],
+    },
   },
   // import the function via paths
-  functions: { importService },
+  functions: { importService, importFileParser },
   package: { individually: true },
   custom: {
     esbuild: {

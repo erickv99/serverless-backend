@@ -1,6 +1,6 @@
 import type { AWS } from '@serverless/typescript';
 
-import hello from '@functions/hello';
+import importService from '@functions/importService';
 
 const serverlessConfiguration: AWS = {
   service: 'import-service',
@@ -8,7 +8,9 @@ const serverlessConfiguration: AWS = {
   plugins: ['serverless-esbuild'],
   provider: {
     name: 'aws',
-    runtime: 'nodejs14.x',
+    runtime: 'nodejs20.x',
+    region: 'us-east-1',
+    stage: 'dev',
     apiGateway: {
       minimumCompressionSize: 1024,
       shouldStartNameWithService: true,
@@ -16,10 +18,24 @@ const serverlessConfiguration: AWS = {
     environment: {
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
       NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
+      REGION: 'us-east-1',
+      BUCKET_NAME: 'practitioner-js',
     },
+    iamRoleStatements: [
+      {
+        Effect: 'Allow',
+        Action: [
+          's3:PutObject',
+          's3:GetObject',
+          's3:DeleteObject',
+          's3:ListBucket',
+        ],
+        Resource: 'arn:aws:s3:::practitioner-js/*',
+      },
+    ],
   },
   // import the function via paths
-  functions: { hello },
+  functions: { importService },
   package: { individually: true },
   custom: {
     esbuild: {

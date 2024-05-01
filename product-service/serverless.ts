@@ -3,6 +3,7 @@ import type { AWS } from '@serverless/typescript';
 import getProductsList from '@functions/getProductsList';
 import getProductsById from '@functions/getProductsById';
 import createProduct from '@functions/createProduct';
+import catalogBatchProcess from '@functions/catalogBatchProcess';
 
 const serverlessConfiguration: AWS = {
   service: 'product-service',
@@ -24,6 +25,10 @@ const serverlessConfiguration: AWS = {
       REGION: 'us-east-1',
       PRODUCTS_TABLE: 'Products',
       STOCKS_TABLE: 'Stocks',
+      CATALOG_ITEMS_QUEUE: 'catalogItemsQueue',
+      CREATE_PRODUCT_TOPIC_SNS_ARN: {
+        Ref: 'createProductTopic',
+      },
     },
     iam: {
       role: {
@@ -44,12 +49,44 @@ const serverlessConfiguration: AWS = {
               'arn:aws:dynamodb:us-east-1:381492271036:table/Stocks',
             ],
           },
+          {
+            Effect: 'Allow',
+            Action: [
+              'sqs:ReceiveMessage',
+              'sqs:DeleteMessage',
+              'sqs:GetQueueAttributes',
+            ],
+            Resource: {
+              'Fn::GetAtt': ['catalogItemsQueue', 'Arn'],
+            },
+          },
+          {
+            Effect: 'Allow',
+            Action: [
+              'logs:CreateLogGroup',
+              'logs:CreateLogStream',
+              'logs:PutLogEvents',
+              'logs:DescribeLogGroups',
+              'logs:DescribeLogStreams',
+            ],
+            Resource: 'arn:aws:logs:*:*:*',
+          },
+          {
+            Effect: 'Allow',
+            Action: 'sns:Publish',
+            Resource: 'arn:aws:sns:us-east-1:381492271036:create-product',
+          },
         ],
       },
     },
   },
   // import the function via paths
-  functions: { getProductsList, getProductsById, createProduct },
+  functions: {
+    getProductsList,
+    getProductsById,
+    createProduct,
+    catalogBatchProcess,
+  },
   package: { individually: true },
   custom: {
     esbuild: {
@@ -61,6 +98,30 @@ const serverlessConfiguration: AWS = {
       define: { 'require.resolve': undefined },
       platform: 'node',
       concurrency: 10,
+    },
+  },
+  resources: {
+    Resources: {
+      catalogItemsQueue: {
+        Type: 'AWS::SQS::Queue',
+        Properties: {
+          QueueName: 'catalogItemsQueue',
+        },
+      },
+      createProductTopic: {
+        Type: 'AWS::SNS::Topic',
+        Properties: {
+          TopicName: 'createProductTopic',
+        },
+      },
+      createProductTopicSubscription: {
+        Type: 'AWS::SNS::Subscription',
+        Properties: {
+          Endpoint: 'alekzdev7@gmail.com',
+          Protocol: 'email',
+          TopicArn: { Ref: 'createProductTopic' },
+        },
+      },
     },
   },
 };

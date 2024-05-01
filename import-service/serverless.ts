@@ -22,6 +22,7 @@ const serverlessConfiguration: AWS = {
       NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
       REGION: 'us-east-1',
       BUCKET_NAME: 'practitioner-js',
+      CATALOG_ITEMS_QUEUE: 'catalogItemsQueue',
     },
     iam: {
       role: {
@@ -35,6 +36,11 @@ const serverlessConfiguration: AWS = {
               's3:ListBucket',
             ],
             Resource: 'arn:aws:s3:::practitioner-js/*',
+          },
+          {
+            Effect: 'Allow',
+            Action: ['sqs:SendMessage', 'sqs:GetQueueUrl'],
+            Resource: '*',
           },
         ],
       },

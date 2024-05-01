@@ -73,8 +73,20 @@ const serverlessConfiguration: AWS = {
           },
           {
             Effect: 'Allow',
-            Action: 'sns:Publish',
-            Resource: 'arn:aws:sns:us-east-1:381492271036:create-product',
+            Action: 'sqs:*',
+            Resource: [
+              {
+                'Fn::GetAtt': [
+                  '${self:provider.environment.CATALOG_ITEMS_QUEUE}',
+                  'Arn',
+                ],
+              },
+            ],
+          },
+          {
+            Effect: 'Allow',
+            Action: 'sns:*',
+            Resource: { Ref: 'createProductTopic' },
           },
         ],
       },

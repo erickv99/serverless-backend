@@ -1,18 +1,17 @@
 import type { AWS } from '@serverless/typescript';
 
-import getProductsList from '@functions/getProductsList';
-import getProductsById from '@functions/getProductsById';
-import createProduct from '@functions/createProduct';
+import importService from '@functions/importService';
+import importFileParser from '@functions/importFileParser';
 
 const serverlessConfiguration: AWS = {
-  service: 'product-service',
+  service: 'import-service',
   frameworkVersion: '3',
   plugins: ['serverless-esbuild'],
   provider: {
     name: 'aws',
     runtime: 'nodejs20.x',
-    profile: 'iam-user1',
     region: 'us-east-1',
+    profile: 'iam-user1',
     stage: 'dev',
     apiGateway: {
       minimumCompressionSize: 1024,
@@ -22,8 +21,7 @@ const serverlessConfiguration: AWS = {
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
       NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
       REGION: 'us-east-1',
-      PRODUCTS_TABLE: 'Products',
-      STOCKS_TABLE: 'Stocks',
+      BUCKET_NAME: 'practitioner-js',
     },
     iam: {
       role: {
@@ -31,25 +29,19 @@ const serverlessConfiguration: AWS = {
           {
             Effect: 'Allow',
             Action: [
-              'dynamodb:DescribeTable',
-              'dynamodb:Query',
-              'dynamodb:Scan',
-              'dynamodb:GetItem',
-              'dynamodb:PutItem',
-              'dynamodb:UpdateItem',
-              'dynamodb:DeleteItem',
+              's3:PutObject',
+              's3:GetObject',
+              's3:DeleteObject',
+              's3:ListBucket',
             ],
-            Resource: [
-              'arn:aws:dynamodb:us-east-1:381492271036:table/Products',
-              'arn:aws:dynamodb:us-east-1:381492271036:table/Stocks',
-            ],
+            Resource: 'arn:aws:s3:::practitioner-js/*',
           },
         ],
       },
     },
   },
   // import the function via paths
-  functions: { getProductsList, getProductsById, createProduct },
+  functions: { importService, importFileParser },
   package: { individually: true },
   custom: {
     esbuild: {

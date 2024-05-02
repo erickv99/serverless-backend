@@ -1,5 +1,11 @@
 # serverless-backend
 
+## commands
+
+### create lambda
+
+`sls create --template aws-nodejs-typescript --path createProduct`
+
 # product service urls
 
 ## products

@@ -3,12 +3,68 @@ import {
   CopyObjectCommand,
   DeleteObjectCommand,
   GetObjectCommand,
+  GetObjectCommandOutput,
   S3Client,
 } from '@aws-sdk/client-s3';
-import { parse } from 'csv-parse';
+import {
+  GetQueueUrlCommand,
+  SQSClient,
+  SendMessageCommand,
+} from '@aws-sdk/client-sqs';
+import csv from 'csv-parser';
+import { Product } from '../../types';
+
 const s3Client = new S3Client({
   region: process.env.REGION,
 });
+const sqsClient = new SQSClient({ region: process.env.REGION });
+
+export const getQUrlByName = async (queueName: string): Promise<string> => {
+  try {
+    console.log('getQUrlByName', queueName);
+
+    const response = await sqsClient.send(
+      new GetQueueUrlCommand({
+        QueueName: queueName,
+      })
+    );
+
+    console.log('getQUrlByName', 'success');
+    return response.QueueUrl;
+  } catch (error) {
+    console.log('getQUrlByName:error', error);
+  }
+};
+
+const parseCsvFile = async <T>(
+  file: GetObjectCommandOutput
+): Promise<Array<T>> => {
+  return new Promise((resolve) => {
+    const parsedItems: Array<T> = [];
+
+    file.Body.pipe(csv())
+      .on('data', (data) => parsedItems.push(data))
+      .on('end', () => resolve(parsedItems));
+  });
+};
+
+const sendCsvToSNS = async (products: Array<Product>) => {
+  console.log('sendCsvToSNS::sending to Q', products);
+  const queueUrl = await getQUrlByName(process.env.CATALOG_ITEMS_QUEUE);
+  for await (const product of products) {
+    const body = JSON.stringify(product);
+    const sqsParams = {
+      QueueUrl: queueUrl,
+      MessageBody: body,
+    };
+    try {
+      await sqsClient.send(new SendMessageCommand(sqsParams));
+      console.log('sendCsvToSNS', 'success');
+    } catch (error) {
+      console.error('sendCsvToSNS', error);
+    }
+  }
+};
 
 const importFileParser = async (event: S3Event) => {
   console.log('importFileParser', `amount of records: ${event.Records.length}`);
@@ -24,18 +80,11 @@ const importFileParser = async (event: S3Event) => {
         Key: fileName,
       })
     );
+    const products: Array<Product> = await parseCsvFile(s3File);
+    console.log('importFileParser', { products });
 
-    const fileAsText = await s3File.Body.transformToString('utf-8');
-    console.log('fileAsText::', fileName, fileAsText);
-
-    parse(fileAsText, { delimiter: ',' }, (error, data) => {
-      if (error) {
-        console.log(error);
-        throw new Error('Something went wrong');
-      }
-
-      console.log('result', data);
-    });
+    // send to QUEUE
+    await sendCsvToSNS(products);
 
     // Copy
     const fileNameWithNewFolder = fileName.replace('uploaded/', 'parsed/');

@@ -1,4 +1,4 @@
-type Product = {
+export type Product = {
   id: string;
   title: string;
   description: string;
@@ -40,6 +40,6 @@ export const products: Product[] = [
     title: 'Cereal',
     description: '',
     price: 3.2,
-    stock: 14,
+    count: 14,
   },
 ];
